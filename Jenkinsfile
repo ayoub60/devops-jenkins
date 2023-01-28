@@ -34,6 +34,31 @@ pipeline {
 				sh "mvn failsafe:integration-test failsafe:verify"
 			}
 		}
+
+		stage('Package'){
+			steps {
+				sh "mvn package -DskipTests"
+			}
+		}
+
+		stage('Buil image'){
+			steps {
+				//"docker build -t ayoub6000/repotest:$env.BUILD_TAG"
+				script {
+					dockerImage = docker.build("ayoub6000/repotest:${env.BUILD_TAG}")
+				}
+			}
+		}
+		stage('Push'){
+			steps {
+				script {
+					dockerImage.withRegistry('','dockerhub'){
+					   dockerImage.push();
+					   dockerImage.push('latest');	
+					}
+				}
+			}
+		}
 	}
 	post {
 		always {
